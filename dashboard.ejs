@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-zinc-950 text-white p-6">
+  <div class="max-w-4xl mx-auto">
+    <div class="flex justify-between items-center mb-10">
+      <h1 class="text-4xl font-bold">Hi, <%= user.username %></h1>
+      <a href="/logout" class="bg-red-600 hover:bg-red-700 px-6 py-3 rounded-xl">Logout</a>
+    </div>
+
+    <% if (typeof success !== 'undefined') { %>
+      <div class="bg-green-900 p-5 rounded-xl mb-8 text-center font-semibold"><%= success %></div>
+    <% } %>
+    <% if (typeof error !== 'undefined') { %>
+      <div class="bg-red-900 p-5 rounded-xl mb-8 text-center font-semibold"><%= error %></div>
+    <% } %>
+
+    <div class="bg-zinc-900 p-8 rounded-2xl mb-10 text-center">
+      <p class="text-6xl font-bold text-green-400"><%= user.credits %></p>
+      <p class="text-xl text-zinc-400 mt-2">credits (1 = 2 hours)</p>
+    </div>
+
+    <div class="bg-zinc-800 p-8 rounded-2xl mb-10">
+      <h2 class="text-3xl mb-6">Your Active Slots (<%= user.slots.length %>/6)</h2>
+
+      <% if (user.slots.length === 0) { %>
+        <p class="text-center text-zinc-400 py-10">No keys yet — buy credits to generate one instantly.</p>
+      <% } else { %>
+        <% user.slots.forEach(slot => { 
+          const diffMs = new Date(slot.expiry) - Date.now();
+          let timeLeft = 'Expired';
+          let colorClass = 'text-red-400';
+          if (diffMs > 0) {
+            const h = Math.floor(diffMs / 3600000);
+            const m = Math.floor((diffMs % 3600000) / 60000);
+            timeLeft = `${h}h ${m}m left`;
+            colorClass = 'text-green-400';
+          }
+        %>
+          <div class="bg-zinc-950 p-6 rounded-xl mb-6 border border-zinc-700">
+            <p class="font-semibold mb-3">Created by: <%= slot.createdByUsername %></p>
+            <code class="block bg-black p-5 rounded-lg break-all font-mono text-green-300 text-lg tracking-wide"><%= slot.key %></code>
+            <p class="mt-4 <%= colorClass %> text-lg">
+              Expires <%= new Date(slot.expiry).toLocaleString() %> (<%= timeLeft %>)
+            </p>
+          </div>
+        <% }); %>
+      <% } %>
+    </div>
+
+    <!-- Add your buy forms here (Stripe, PayPal placeholder, crypto/manual ticket link) -->
+    <!-- Example Stripe form -->
+    <form id="buyForm" class="bg-zinc-900 p-8 rounded-2xl">
+      <label class="block text-xl mb-4">Buy Credits</label>
+      <input type="number" name="credits" min="1" value="5" class="bg-zinc-800 p-4 w-full rounded-xl mb-6 text-white">
+      <button type="button" onclick="startBuy()" class="w-full bg-blue-600 hover:bg-blue-700 py-5 rounded-xl text-xl font-bold">Buy with Stripe</button>
+    </form>
+
+    <div class="mt-10 text-center text-zinc-400">
+      Manual payment? <a href="#" class="text-indigo-400 hover:underline">Open ticket</a>
+    </div>
+  </div>
+
+  <script>
+    async function startBuy() {
+      const credits = document.querySelector('input[name="credits"]').value;
+      if (!credits || credits < 1) return alert('Enter a valid amount');
+      // In real: fetch('/buy/stripe', {method:'POST', body: JSON.stringify({credits})}).then(r=>r.json()).then(d=>window.location=d.url)
+      alert('Redirecting to payment... (implement /buy/stripe POST endpoint)');
+    }
+  </script>
+</body>
+</html>

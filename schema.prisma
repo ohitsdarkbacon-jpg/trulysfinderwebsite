@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String   @id @default(uuid())
+  discordId  String   @unique
+  username   String
+  credits    Int      @default(0)
+  slots      Slot[]
+  tickets    Ticket[]
+  createdAt  DateTime @default(now())
+}
+
+model Slot {
+  id                 String   @id @default(uuid())
+  key                String
+  expiry             DateTime
+  createdByUsername  String
+  createdAt          DateTime @default(now())
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId             String
+}
+
+model Ticket {
+  id        String   @id @default(uuid())
+  userId    String
+  username  String
+  title     String
+  messages  Json[]   
+  status    String   @default("open")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
